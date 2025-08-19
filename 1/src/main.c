@@ -42,7 +42,7 @@ void on_window_size(GLFWwindow *window, int w, int h)
 
 int main()
 {
-    GLFWwindow *window = glfwg_init(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
+    GLFWwindow *window = glfwg__init(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
 
     glfwSetCharCallback(window, on_char);
     glfwSetKeyCallback(window, on_key);
@@ -61,9 +61,9 @@ int main()
 
         glfwPollEvents();
 
-        glg_set_viewport_size(glfwg_get_fb_size());
+        glg__set_viewport_size(glfwg__get_fb_size());
 
-        glg_clear(COLOR_ALIZARIN);
+        glg__clear(COLOR_ALIZARIN);
 
         glfwSwapBuffers(window);
     }

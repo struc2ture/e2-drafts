@@ -1,0 +1,43 @@
+CC = clang
+CFLAGS = -g
+CFLAGS += -I/opt/homebrew/include -Ithird_party 
+CFLAGS += -DGL_SILENCE_DEPRECATION
+CFLAGS += -Wall -Wextra -Werror -Wno-unused-function -Wno-unused-parameter -Wno-unused-variable
+LFLAGS = -L/opt/homebrew/lib -lglfw -framework OpenGL
+
+CIMGUIRPATH = -Wl,-rpath,/Users/struc/dev/other/cimgui/backend_test/example_glfw_opengl3/build
+
+editor: bin/hub bin/editor.dylib bin/debug.dylib bin/cube.dylib bin/obj_viewer.dylib
+
+d: bin/hub bin/debug.dylib
+	lldb bin/hub -o run
+
+dd: bin/hub bin/editor.dylib bin/debug.dylib
+	lldb bin/hub -o run -- bin/editor.dylib
+
+clean:
+	rm -rf bin
+	mkdir -p bin
+
+.PHONY: editor d dd clean
+
+bin/hub: src/hub/hub.c $(wildcard src/hub/*)
+	$(CC) $(CFLAGS) $(LFLAGS) $< -o $@ $(CIMGUIRPATH)
+
+bin/editor_api.o: src/editor/editor.c $(wildcard src/editor/*) $(wildcard src/lib/*)
+	$(CC) -c $(CFLAGS) $< -o $@
+
+bin/editor.dylib: src/scenes/editor_scene.c bin/editor_api.o
+	$(CC) -dynamiclib $(CFLAGS) $(LFLAGS) $< bin/editor_api.o -o $@
+
+bin/cube.dylib: src/scenes/cube/cube.c
+	$(CC) -dynamiclib $(CFLAGS) $(LFLAGS) $< -o $@
+
+bin/debug.dylib: src/scenes/debug_scene.c
+	$(CC) -dynamiclib $(CFLAGS) $(LFLAGS) -I/Users/struc/dev/other/cimgui -L/Users/struc/dev/other/cimgui/backend_test/example_glfw_opengl3/build -lcimgui $< -o $@
+
+bin/triangle.dylib: src/scenes/triangle.c
+	$(CC) -dynamiclib $(CFLAGS) $(LFLAGS) $< -o $@
+
+bin/obj_viewer.dylib: src/scenes/obj_viewer.c
+	$(CC) -dynamiclib $(CFLAGS) $(LFLAGS) $< -o $@
