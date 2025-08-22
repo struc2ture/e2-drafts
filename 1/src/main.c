@@ -9,6 +9,7 @@
 #include "common/types.h"
 #include "common/util.h"
 #include "triangle_renderer/triangle_renderer.h"
+#include "quad_renderer/quad_renderer.h"
 
 void on_char(GLFWwindow *window, unsigned int codepoint)
 {
@@ -56,6 +57,7 @@ int main()
     glfwSwapInterval(1);
 
     triangle_renderer_init();
+    quad_renderer_init();
 
     while (!glfwWindowShouldClose(window))
     {
@@ -70,7 +72,12 @@ int main()
         triangle_renderer_submit_triangle(V2(-1.0f, -1.0f), V2(0.0f, -1.0f), V2(-0.5f, 0.0f), COLOR_BLACK);
         triangle_renderer_submit_triangle(V2(0.0f, -1.0f), V2(1.0f, -1.0f), V2(0.5f, 0.0f), COLOR_WHITE);
 
+        quad_renderer_submit_quad(V2(-0.6f, -0.6f), V2(0.6f, -0.6f), V2(0.6f, 0.6f), V2(-0.6f, 0.6f), COLOR_ALIZARIN);
+        quad_renderer_submit_quad(V2(-0.5f, -0.5f), V2(0.5f, -0.5f), V2(0.5f, 0.5f), V2(-0.5f, 0.5f), COLOR_BLACK);
+        quad_renderer_submit_quad(V2(-0.25f, -0.25f), V2(0.25f, -0.25f), V2(0.25f, 0.25f), V2(-0.25f, 0.25f), COLOR_WHITE);
+
         triangle_renderer_draw();
+        quad_renderer_draw();
 
         glfwSwapBuffers(window);
     }

@@ -27,5 +27,8 @@ bin/common.o: $(wildcard src/common/*)
 bin/triangle_renderer.o: $(wildcard src/triangle_renderer/*)
 	$(CC) $(CFLAGS) -c src/triangle_renderer/triangle_renderer.c -o $@
 
-bin/editor: src/main.c bin/common.o bin/triangle_renderer.o
+bin/quad_renderer.o: $(wildcard src/quad_renderer/*)
+	$(CC) $(CFLAGS) -c src/quad_renderer/quad_renderer.c -o $@
+
+bin/editor: src/main.c bin/common.o bin/triangle_renderer.o bin/quad_renderer.o
 	$(CC) $(CFLAGS) $(LFLAGS) $^ -o $@
