@@ -110,6 +110,13 @@ static void _get_atlas_q_verts(v2i cell_p, v2 out_verts[4])
     max_y -= ATLAS_CELL_PAD;
     min_y += ATLAS_CELL_PAD;
 
+    // texel offset, to sample the middle of texels
+    min_x += 0.5f;
+    max_x += 0.5f;
+    min_y += 0.5f;
+    max_y += 0.5f;
+
+    // Normalized range
     min_x /= ATLAS_DIM;
     max_x /= ATLAS_DIM;
     min_y /= ATLAS_DIM;
