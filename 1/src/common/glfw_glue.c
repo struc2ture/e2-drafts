@@ -8,7 +8,7 @@
 
 static GLFWwindow *glfwg__g_Window;
 
-static GLFWwindow *glfwg__init(int window_w, int window_h)
+GLFWwindow *glfwg__init(int window_w, int window_h)
 {
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -25,7 +25,7 @@ static GLFWwindow *glfwg__init(int window_w, int window_h)
     return glfwg__g_Window;
 }
 
-static v2i glfwg__get_fb_size()
+v2i glfwg__get_fb_size()
 {
     v2i result;
     glfwGetFramebufferSize(glfwg__g_Window, &result.x, &result.y);

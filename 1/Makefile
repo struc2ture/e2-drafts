@@ -19,10 +19,10 @@ clean:
 	rm -rf bin
 	mkdir bin
 
-.FORCE:
-	@echo "Full rebuild"
+.PHONY: editor run debug clean
 
-.PHONY: editor run debug clean .FORCE
+bin/common.o: $(wildcard src/common/*)
+	$(CC) $(CFLAGS) -c src/common/common.c -o $@
 
-bin/editor: src/main.c .FORCE
-	$(CC) $(CFLAGS) $(LFLAGS) $< -o $@
+bin/editor: src/main.c bin/common.o
+	$(CC) $(CFLAGS) $(LFLAGS) $^ -o $@

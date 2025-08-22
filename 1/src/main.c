@@ -3,14 +3,11 @@
 #include <OpenGL/gl3.h>
 #include <GLFW/glfw3.h>
 
-#include "colors.h"
-#include "gl_glue.h"
-#include "glfw_glue.h"
-#include "types.h"
-#include "util.h"
-
-#define INITIAL_WINDOW_WIDTH 1000
-#define INITIAL_WINDOW_HEIGHT 900
+#include "common/colors.h"
+#include "common/gl_glue.h"
+#include "common/glfw_glue.h"
+#include "common/types.h"
+#include "common/util.h"
 
 void on_char(GLFWwindow *window, unsigned int codepoint)
 {
@@ -42,7 +39,10 @@ void on_window_size(GLFWwindow *window, int w, int h)
 
 int main()
 {
-    GLFWwindow *window = glfwg__init(INITIAL_WINDOW_WIDTH, INITIAL_WINDOW_HEIGHT);
+    int width =  1000;
+    int height =  900;
+
+    GLFWwindow *window = glfwg__init(width, height);
 
     glfwSetCharCallback(window, on_char);
     glfwSetKeyCallback(window, on_key);
@@ -54,11 +54,8 @@ int main()
 
     glfwSwapInterval(1);
 
-    bool first_frame = true;
     while (!glfwWindowShouldClose(window))
     {
-        // if (first_frame) { break(); first_frame = false; }
-
         glfwPollEvents();
 
         glg__set_viewport_size(glfwg__get_fb_size());
@@ -70,6 +67,3 @@ int main()
 
     return 0;
 }
-
-#include "gl_glue.c"
-#include "glfw_glue.c"
