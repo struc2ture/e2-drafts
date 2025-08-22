@@ -32,3 +32,17 @@ v2i glfwg__get_fb_size()
     glfwGetFramebufferSize(glfwg__g_Window, &result.x, &result.y);
     return result;
 }
+
+v2i glfwg__get_window_size()
+{
+    v2i result;
+    glfwGetWindowSize(glfwg__g_Window, &result.x, &result.y);
+    return result;
+}
+
+v2 glfwg__get_window_size_f()
+{
+    int w, h;
+    glfwGetWindowSize(glfwg__g_Window, &w, &h);
+    return V2(w, h);
+}

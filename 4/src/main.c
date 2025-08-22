@@ -6,6 +6,7 @@
 #include "common/colors.h"
 #include "common/gl_glue.h"
 #include "common/glfw_glue.h"
+#include "common/lin_math.h"
 #include "common/types.h"
 #include "common/util.h"
 #include "ui_renderer/ui_renderer.h"
@@ -68,11 +69,40 @@ int main()
 
         glg__clear(COLOR_ALIZARIN);
 
-        ui_renderer_submit_quad(V2(-0.6f, -0.6f), V2(0.6f, -0.6f), V2(0.6f, 0.6f), V2(-0.6f, 0.6f), COLOR_BLACK);
-        ui_renderer_submit_quad(V2(-0.5f, -0.5f), V2(0.5f, -0.5f), V2(0.5f, 0.5f), V2(-0.5f, 0.5f), COLOR_ALIZARIN);
-        ui_renderer_submit_quad(V2(-0.25f, -0.25f), V2(0.25f, -0.25f), V2(0.25f, 0.25f), V2(-0.25f, 0.25f), COLOR_WHITE);
-        ui_renderer_submit_circle(V2(0.0f, 0.0f), 0.01f, COLOR_ALIZARIN);
-        ui_renderer_draw();
+        v2 window_size = glfwg__get_window_size_f();
+        v2 screen_middle = V2(window_size.x * 0.5f, window_size.y * 0.5f);
+
+        f32 quad1_r = 200.0f;
+        f32 quad2_r = 150.0f;
+        f32 quad3_r = 100.0f;
+
+        ui_renderer_submit_quad(
+            v2_add(screen_middle, V2(-quad1_r,  quad1_r)),
+            v2_add(screen_middle, V2( quad1_r,  quad1_r)),
+            v2_add(screen_middle, V2( quad1_r, -quad1_r)), 
+            v2_add(screen_middle, V2(-quad1_r, -quad1_r)),
+            COLOR_BLACK
+        );
+
+        ui_renderer_submit_quad(
+            v2_add(screen_middle, V2(-quad2_r,  quad2_r)),
+            v2_add(screen_middle, V2( quad2_r,  quad2_r)),
+            v2_add(screen_middle, V2( quad2_r, -quad2_r)), 
+            v2_add(screen_middle, V2(-quad2_r, -quad2_r)),
+            COLOR_WHITE
+        );
+
+        ui_renderer_submit_quad(
+            v2_add(screen_middle, V2(-quad3_r,  quad3_r)),
+            v2_add(screen_middle, V2( quad3_r,  quad3_r)),
+            v2_add(screen_middle, V2( quad3_r, -quad3_r)), 
+            v2_add(screen_middle, V2(-quad3_r, -quad3_r)),
+            COLOR_ALIZARIN
+        );
+
+        ui_renderer_submit_circle(screen_middle, 16.0f, COLOR_BLACK);
+
+        ui_renderer_draw(window_size);
 
         glfwSwapBuffers(window);
     }

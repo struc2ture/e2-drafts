@@ -7,6 +7,7 @@
 #include <OpenGL/gl3.h>
 
 #include "../common/gl_glue.h"
+#include "../common/lin_math.h"
 #include "../common/types.h"
 #include "../common/util.h"
 
@@ -51,7 +52,8 @@ static GLuint vao = 0;
 static GLuint vbo = 0;
 static GLuint ebo = 0;
 static GLuint shader_program = 0;
-static GLint shader_uTex_loc = 0;
+static GLint shader_loc_uMvp = 0;
+static GLint shader_loc_uTex = 0;
 
 static struct Quad quad_buf[MAX_QUADS];
 static size_t quad_count = 0;
@@ -66,11 +68,12 @@ static const char* vs_src =
     "layout(location = 0) in vec2 inPos;\n"
     "layout(location = 1) in vec2 inTexCoord;\n"
     "layout(location = 2) in vec4 inColor;\n"
+    "uniform mat4 uMvp;"
     "out vec2 TexCoord;\n"
     "out vec4 Color;\n"
     "void main()\n"
     "{\n"
-    "    gl_Position = vec4(inPos, 0.0, 1.0);\n"
+    "    gl_Position = uMvp * vec4(inPos, 0.0, 1.0);\n"
     "    TexCoord = inTexCoord;\n"
     "    Color = inColor;\n"
     "}\n";
@@ -160,8 +163,11 @@ void ui_renderer_init()
     shader_program = glg__create_shader_program(vs_src, fs_src);
 
     glUseProgram(shader_program);
-    shader_uTex_loc = glGetUniformLocation(shader_program, "uTex");
-    glUniform1i(shader_uTex_loc, 0);
+    shader_loc_uMvp = glGetUniformLocation(shader_program, "uMvp");
+    shader_loc_uTex = glGetUniformLocation(shader_program, "uTex");
+    glUniformMatrix4fv(shader_loc_uMvp, 1, GL_FALSE, m4_identity().d);
+    glUniform1i(shader_loc_uTex, 0);
+
     glUseProgram(0);
 
     glGenVertexArrays(1, &vao);
@@ -242,9 +248,12 @@ void ui_renderer_submit_circle(v2 p, f32 r, v4 color)
     _add_indices(ind_base, (u32[]){0, 1, 2, 0, 2, 3}, 6);
 }
 
-void ui_renderer_draw()
+void ui_renderer_draw(v2 window_size)
 {
     glUseProgram(shader_program);
+    m4 proj = m4_proj_ortho(0.0f, window_size.x, window_size.y, 0.0f, -1.0f, 1.0f);
+
+    glUniformMatrix4fv(shader_loc_uMvp, 1, GL_FALSE, proj.d);
 
     glBindVertexArray(vao);
 

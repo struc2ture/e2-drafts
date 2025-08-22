@@ -15,6 +15,7 @@
     exit(EXIT_FAILURE); \
 } while (0)
 
+#undef assert
 #define assert(cond) do { \
     if (!(cond)) { \
         __builtin_debugtrap(); \
