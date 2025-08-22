@@ -8,6 +8,7 @@
 #include "common/glfw_glue.h"
 #include "common/types.h"
 #include "common/util.h"
+#include "triangle_renderer/triangle_renderer.h"
 
 void on_char(GLFWwindow *window, unsigned int codepoint)
 {
@@ -54,6 +55,8 @@ int main()
 
     glfwSwapInterval(1);
 
+    triangle_renderer_init();
+
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();
@@ -61,6 +64,13 @@ int main()
         glg__set_viewport_size(glfwg__get_fb_size());
 
         glg__clear(COLOR_ALIZARIN);
+
+        triangle_renderer_submit_triangle(V2(-1.0f, 0.0f), V2(0.0f, 0.0f), V2(-0.5f, 1.0f), COLOR_WHITE);
+        triangle_renderer_submit_triangle(V2(0.0f, 0.0f), V2(1.0f, 0.0f), V2(0.5f, 1.0f), COLOR_BLACK);
+        triangle_renderer_submit_triangle(V2(-1.0f, -1.0f), V2(0.0f, -1.0f), V2(-0.5f, 0.0f), COLOR_BLACK);
+        triangle_renderer_submit_triangle(V2(0.0f, -1.0f), V2(1.0f, -1.0f), V2(0.5f, 0.0f), COLOR_WHITE);
+
+        triangle_renderer_draw();
 
         glfwSwapBuffers(window);
     }

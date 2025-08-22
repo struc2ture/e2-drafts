@@ -24,5 +24,8 @@ clean:
 bin/common.o: $(wildcard src/common/*)
 	$(CC) $(CFLAGS) -c src/common/common.c -o $@
 
-bin/editor: src/main.c bin/common.o
+bin/triangle_renderer.o: $(wildcard src/triangle_renderer/*)
+	$(CC) $(CFLAGS) -c src/triangle_renderer/triangle_renderer.c -o $@
+
+bin/editor: src/main.c bin/common.o bin/triangle_renderer.o
 	$(CC) $(CFLAGS) $(LFLAGS) $^ -o $@
