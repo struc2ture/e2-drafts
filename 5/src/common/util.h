@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -39,4 +40,17 @@ static void *xcalloc(size_t size)
     void *ptr = calloc(1, size);
     if (!ptr) fatal("calloc failed for %zu", size);
     return ptr;
+}
+
+static char *strf(const char *fmt, ...)
+{
+    va_list args;
+    va_start(args, fmt);
+    size_t size = vsnprintf(NULL, 0, fmt, args) + 1;
+    va_end(args);
+    char *str = xmalloc(size);
+    va_start(args, fmt);
+    vsnprintf(str, size, fmt, args);
+    va_end(args);
+    return str;
 }

@@ -61,6 +61,16 @@ static u32 ind_buf[MAX_INDICES];
 static size_t ind_count = 0;
 
 static GLuint font_tex;
+static f32 i_dpi_scale;
+
+static int atlas_w;
+static int atlas_h;
+static int first_char;
+static int char_count;
+static f32 ascent;
+static f32 descent;
+static f32 line_gap;
+static stbtt_bakedchar *char_data;
 
 static const char* vs_src =
     "#version 410 core\n"
@@ -97,7 +107,7 @@ static void _add_indices(u32 base, u32 *indices, int count)
     }
 }
 
-static void _get_atlas_q_verts(v2i cell_p, v2 out_verts[4])
+static void _get_font_q_screen_verts_and_tex_coords(stbtt_aligned_quad q, v2 out_screen_verts[4], v2 out_tex_coords[4])
 {
     // f32 min_x = cell_p.x * ATLAS_CELL_DIM;
     // f32 max_x = min_x + ATLAS_CELL_DIM;
@@ -128,6 +138,22 @@ static void _get_atlas_q_verts(v2i cell_p, v2 out_verts[4])
 
     // for (int i = 0; i < 4; i++)
     //     trace("atlas_vert[%d]: %f, %f", i, out_verts[i].x, out_verts[i].y);
+
+    // typedef struct
+    // {
+    // float x0,y0,s0,t0; // top-left
+    // float x1,y1,s1,t1; // bottom-right
+    // } stbtt_aligned_quad;
+
+    out_screen_verts[0].x = q.x0; out_screen_verts[0].y = q.y0;
+    out_screen_verts[1].x = q.x1; out_screen_verts[1].y = q.y0;
+    out_screen_verts[2].x = q.x1; out_screen_verts[2].y = q.y1;
+    out_screen_verts[3].x = q.x0; out_screen_verts[3].y = q.y1;
+
+    out_tex_coords[0].x = q.s0; out_tex_coords[0].y = q.t0;
+    out_tex_coords[1].x = q.s1; out_tex_coords[1].y = q.t0;
+    out_tex_coords[2].x = q.s1; out_tex_coords[2].y = q.t1;
+    out_tex_coords[3].x = q.s0; out_tex_coords[3].y = q.t1;
 }
 
 static void _get_verts_for_p_r(v2 p, f32 r, v2 out_verts[4])
@@ -148,17 +174,20 @@ static void _load_font()
     void *file_bytes = xmalloc(file_size);
     fread(file_bytes, 1, file_size, f);
 
-    int atlas_w = 512;
-    int atlas_h = 512;
+    f32 dpi_scale = 1.0f;
+    i_dpi_scale = 1.0f / dpi_scale;
+
+    atlas_w = 512;
+    atlas_h = 512;
+
     void *atlas_bitmap = xcalloc(atlas_w * atlas_h); // 1 byte per pixel
 
-    int first_char = 32;
-    int char_count = 96;
-    stbtt_bakedchar *char_data = xcalloc(96 * sizeof(stbtt_bakedchar));
-    stbtt_BakeFontBitmap(file_bytes, 0, FONT_SIZE, atlas_bitmap, atlas_w, atlas_h, first_char, char_count, char_data);
+    first_char = 32;
+    char_count = 96;
+    char_data = xcalloc(char_count * sizeof(stbtt_bakedchar));
+    stbtt_BakeFontBitmap(file_bytes, 0, FONT_SIZE * dpi_scale, atlas_bitmap, atlas_w, atlas_h, first_char, char_count, char_data);
 
-    f32 ascent, descent, line_gap;
-    stbtt_GetScaledFontVMetrics(file_bytes, 0, FONT_SIZE, &ascent, &descent, &line_gap);
+    stbtt_GetScaledFontVMetrics(file_bytes, 0, FONT_SIZE * dpi_scale, &ascent, &descent, &line_gap);
     free(file_bytes);
 
     glActiveTexture(GL_TEXTURE31); // Do texture init on unit 31, to not mess up already setup textures
@@ -166,6 +195,7 @@ static void _load_font()
     glBindTexture(GL_TEXTURE_2D, font_tex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, atlas_w, atlas_h, 0, GL_RED, GL_UNSIGNED_BYTE, atlas_bitmap);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     free(atlas_bitmap);
@@ -212,7 +242,7 @@ void text_renderer_init()
     glBindTexture(GL_TEXTURE_2D, font_tex);
 }
 
-void text_renderer_submit_string(v2 a, v2 b, v2 c, v2 d, v4 color)
+void text_renderer_submit_string(const char *str, v2 p, v4 color)
 {
     if (quad_count >= MAX_QUADS)
     {
@@ -220,16 +250,32 @@ void text_renderer_submit_string(v2 a, v2 b, v2 c, v2 d, v4 color)
         return;
     }
 
-    int ind_base = quad_count * 4;
+    p.y += ascent * i_dpi_scale;
+    while (*str)
+    {
+        char ch = *str++;
+        if (ch >= 32)
+        {
+            stbtt_aligned_quad q;
+            stbtt_GetBakedQuad(char_data, atlas_w, atlas_h, ch-32, &p.x, &p.y ,&q, 1, i_dpi_scale);
+            // break();
+            v2 screen_verts[4];
+            v2 tex_coords[4];
+            _get_font_q_screen_verts_and_tex_coords(q, screen_verts, tex_coords);
 
-    quad_buf[quad_count++] = (struct Quad){
-        (struct Vert){a, V2(0.0f, 0.0f), color},
-        (struct Vert){b, V2(1.0f, 0.0f), color},
-        (struct Vert){c, V2(1.0f, 1.0f), color},
-        (struct Vert){d, V2(0.0f, 1.0f), color},
-    };
+            int ind_base = quad_count * 4;
 
-    _add_indices(ind_base, (u32[]){0, 1, 2, 0, 2, 3}, 6);
+            quad_buf[quad_count++] = (struct Quad){
+                (struct Vert){screen_verts[0], tex_coords[0], color},
+                (struct Vert){screen_verts[1], tex_coords[1], color},
+                (struct Vert){screen_verts[2], tex_coords[2], color},
+                (struct Vert){screen_verts[3], tex_coords[3], color},
+            };
+
+            _add_indices(ind_base, (u32[]){0, 1, 2, 0, 2, 3}, 6);
+        }
+    }
+
 }
 
 void text_renderer_draw(v2 window_size)
