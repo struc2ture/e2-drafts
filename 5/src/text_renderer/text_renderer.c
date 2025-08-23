@@ -11,7 +11,8 @@
 #include "../common/types.h"
 #include "../common/util.h"
 
-#include <stb_image.h>
+// #include <stb_image.h>
+#include <stb_truetype.h>
 
 /*
  * Checklist when changing vert attribute layout
@@ -40,13 +41,11 @@ struct Quad
 #define IND_SIZE (sizeof(ind_buf[0]))
 #define IND_BUF_SIZE (MAX_INDICES * IND_SIZE)
 
-#define ATLAS_PATH "res/ui_atlas.png"
-#define ATLAS_DIM 1024.0f
-#define ATLAS_CELL_DIM 64.0f
-#define ATLAS_CELL_PAD 4.0f
+#define FONT_PATH "res/font_dm_mono_italic.ttf"
+#define FONT_SIZE 32.0f
 
-#define ATLAS_TEXTURE_UNIT 0
-#define ATLAS_TEXTURE_UNIT_ENUM (GL_TEXTURE0 + ATLAS_TEXTURE_UNIT)
+#define FONT_TEXTURE_UNIT 1
+#define FONT_TEXTURE_UNIT_ENUM (GL_TEXTURE0 + FONT_TEXTURE_UNIT)
 
 static GLuint vao = 0;
 static GLuint vbo = 0;
@@ -61,7 +60,7 @@ static size_t quad_count = 0;
 static u32 ind_buf[MAX_INDICES];
 static size_t ind_count = 0;
 
-static GLuint atlas_tex;
+static GLuint font_tex;
 
 static const char* vs_src =
     "#version 410 core\n"
@@ -86,7 +85,7 @@ static const char* fs_src =
     "out vec4 FragColor;\n"
     "void main()\n"
     "{\n"
-    "    vec4 t = texture(uTex, TexCoord);\n"
+    "    float t = texture(uTex, TexCoord).r;\n"
     "    FragColor = t * Color;\n"
     "}\n";
 
@@ -100,32 +99,32 @@ static void _add_indices(u32 base, u32 *indices, int count)
 
 static void _get_atlas_q_verts(v2i cell_p, v2 out_verts[4])
 {
-    f32 min_x = cell_p.x * ATLAS_CELL_DIM;
-    f32 max_x = min_x + ATLAS_CELL_DIM;
-    min_x += ATLAS_CELL_PAD;
-    max_x -= ATLAS_CELL_PAD;
+    // f32 min_x = cell_p.x * ATLAS_CELL_DIM;
+    // f32 max_x = min_x + ATLAS_CELL_DIM;
+    // min_x += ATLAS_CELL_PAD;
+    // max_x -= ATLAS_CELL_PAD;
 
-    f32 max_y = ATLAS_DIM - cell_p.y * ATLAS_CELL_DIM;
-    f32 min_y = max_y - ATLAS_CELL_DIM;
-    max_y -= ATLAS_CELL_PAD;
-    min_y += ATLAS_CELL_PAD;
+    // f32 max_y = ATLAS_DIM - cell_p.y * ATLAS_CELL_DIM;
+    // f32 min_y = max_y - ATLAS_CELL_DIM;
+    // max_y -= ATLAS_CELL_PAD;
+    // min_y += ATLAS_CELL_PAD;
 
-    // texel offset, to sample the middle of texels
-    min_x += 0.5f;
-    max_x += 0.5f;
-    min_y += 0.5f;
-    max_y += 0.5f;
+    // // texel offset, to sample the middle of texels
+    // min_x += 0.5f;
+    // max_x += 0.5f;
+    // min_y += 0.5f;
+    // max_y += 0.5f;
 
-    // Normalized range
-    min_x /= ATLAS_DIM;
-    max_x /= ATLAS_DIM;
-    min_y /= ATLAS_DIM;
-    max_y /= ATLAS_DIM;
+    // // Normalized range
+    // min_x /= ATLAS_DIM;
+    // max_x /= ATLAS_DIM;
+    // min_y /= ATLAS_DIM;
+    // max_y /= ATLAS_DIM;
 
-    out_verts[0].x = min_x; out_verts[0].y = min_y;
-    out_verts[1].x = max_x; out_verts[1].y = min_y;
-    out_verts[2].x = max_x; out_verts[2].y = max_y;
-    out_verts[3].x = min_x; out_verts[3].y = max_y;
+    // out_verts[0].x = min_x; out_verts[0].y = min_y;
+    // out_verts[1].x = max_x; out_verts[1].y = min_y;
+    // out_verts[2].x = max_x; out_verts[2].y = max_y;
+    // out_verts[3].x = min_x; out_verts[3].y = max_y;
 
     // for (int i = 0; i < 4; i++)
     //     trace("atlas_vert[%d]: %f, %f", i, out_verts[i].x, out_verts[i].y);
@@ -139,30 +138,37 @@ static void _get_verts_for_p_r(v2 p, f32 r, v2 out_verts[4])
     out_verts[3].x = p.x - r; out_verts[3].y = p.y + r;
 }
 
-static void _load_atlas_texture()
+static void _load_font()
 {
-    stbi_set_flip_vertically_on_load(true);
-    int w, h, ch;
-    unsigned char *tex_data = stbi_load(ATLAS_PATH, &w, &h, &ch, 4);
-    assert(ch == 4);
+    FILE *f = fopen(FONT_PATH, "rb");
+    if (!f) fatal("Failed to open file for reading at %s", FONT_PATH);
+    fseek(f, 0, SEEK_END);
+    int file_size = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    void *file_bytes = xmalloc(file_size);
+    fread(file_bytes, 1, file_size, f);
 
-    // GLenum internal_format, format;
-    // if (ch == 4) { internal_format = GL_RGBA8; format = GL_RGBA; }
-    // else if (ch == 3) { internal_format = GL_RGB8; format = GL_RGB; }
-    // else if (ch == 2) { internal_format = GL_RG8; format = GL_RG; }
-    // else if (ch == 1) { internal_format = GL_R8; format = GL_RED; }
-    // else warning("Invalid texture channel number");
+    int atlas_w = 512;
+    int atlas_h = 512;
+    void *atlas_bitmap = xcalloc(atlas_w * atlas_h); // 1 byte per pixel
 
-    glGenTextures(1, &atlas_tex);
-    glBindTexture(GL_TEXTURE_2D, atlas_tex);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
+    int first_char = 32;
+    int char_count = 96;
+    stbtt_bakedchar *char_data = xcalloc(96 * sizeof(stbtt_bakedchar));
+    stbtt_BakeFontBitmap(file_bytes, 0, FONT_SIZE, atlas_bitmap, atlas_w, atlas_h, first_char, char_count, char_data);
 
+    f32 ascent, descent, line_gap;
+    stbtt_GetScaledFontVMetrics(file_bytes, 0, FONT_SIZE, &ascent, &descent, &line_gap);
+    free(file_bytes);
+
+    glActiveTexture(GL_TEXTURE31); // Do texture init on unit 31, to not mess up already setup textures
+    glGenTextures(1, &font_tex);
+    glBindTexture(GL_TEXTURE_2D, font_tex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, atlas_w, atlas_h, 0, GL_RED, GL_UNSIGNED_BYTE, atlas_bitmap);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    stbi_image_free(tex_data);
+    free(atlas_bitmap);
 }
 
 void text_renderer_init()
@@ -173,7 +179,7 @@ void text_renderer_init()
     shader_loc_uMvp = glGetUniformLocation(shader_program, "uMvp");
     shader_loc_uTex = glGetUniformLocation(shader_program, "uTex");
     glUniformMatrix4fv(shader_loc_uMvp, 1, GL_FALSE, m4_identity().d);
-    glUniform1i(shader_loc_uTex, 0);
+    glUniform1i(shader_loc_uTex, FONT_TEXTURE_UNIT);
 
     glUseProgram(0);
 
@@ -201,9 +207,9 @@ void text_renderer_init()
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-    _load_atlas_texture();
-    glActiveTexture(ATLAS_TEXTURE_UNIT);
-    glBindTexture(GL_TEXTURE_2D, atlas_tex);
+    _load_font();
+    glActiveTexture(FONT_TEXTURE_UNIT_ENUM);
+    glBindTexture(GL_TEXTURE_2D, font_tex);
 }
 
 void text_renderer_submit_string(v2 a, v2 b, v2 c, v2 d, v4 color)
@@ -216,14 +222,11 @@ void text_renderer_submit_string(v2 a, v2 b, v2 c, v2 d, v4 color)
 
     int ind_base = quad_count * 4;
 
-    v2 atlas_q_verts[4];
-    _get_atlas_q_verts(V2I(0, 0), atlas_q_verts);
-
     quad_buf[quad_count++] = (struct Quad){
-        (struct Vert){a, atlas_q_verts[0], color},
-        (struct Vert){b, atlas_q_verts[1], color},
-        (struct Vert){c, atlas_q_verts[2], color},
-        (struct Vert){d, atlas_q_verts[3], color},
+        (struct Vert){a, V2(0.0f, 0.0f), color},
+        (struct Vert){b, V2(1.0f, 0.0f), color},
+        (struct Vert){c, V2(1.0f, 1.0f), color},
+        (struct Vert){d, V2(0.0f, 1.0f), color},
     };
 
     _add_indices(ind_base, (u32[]){0, 1, 2, 0, 2, 3}, 6);

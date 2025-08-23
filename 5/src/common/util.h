@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #define trace(FMT, ...) \
     printf("[TRACE:%s:%d(%s)] " FMT "\n", __FILE__, __LINE__, __func__, ##__VA_ARGS__)
@@ -25,3 +26,17 @@
 
 #define break() __builtin_debugtrap()
 #define noop() do {} while (0)
+
+static void *xmalloc(size_t size)
+{
+    void *ptr = malloc(size);
+    if (!ptr) fatal("malloc failed for %zu", size);
+    return ptr;
+}
+
+static void *xcalloc(size_t size)
+{
+    void *ptr = calloc(1, size);
+    if (!ptr) fatal("calloc failed for %zu", size);
+    return ptr;
+}

@@ -107,9 +107,9 @@ int main()
         ui_renderer_draw(window_size);
 
         text_renderer_submit_string(
-            V2(200.0f, 300.0f),
-            V2(300.0f, 300.0f),
-            V2(300.0f, 200.0f),
+            V2(200.0f, 600.0f),
+            V2(600.0f, 600.0f),
+            V2(600.0f, 200.0f),
             V2(200.0f, 200.0f),
             COLOR_WHITE
         );

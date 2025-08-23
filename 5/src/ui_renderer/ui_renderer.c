@@ -154,6 +154,7 @@ static void _load_atlas_texture()
     // else warning("Invalid texture channel number");
 
     glGenTextures(1, &atlas_tex);
+    glActiveTexture(GL_TEXTURE31); // Do texture init on unit 31, to not mess up already setup textures
     glBindTexture(GL_TEXTURE_2D, atlas_tex);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, tex_data);
 
@@ -173,7 +174,7 @@ void ui_renderer_init()
     shader_loc_uMvp = glGetUniformLocation(shader_program, "uMvp");
     shader_loc_uTex = glGetUniformLocation(shader_program, "uTex");
     glUniformMatrix4fv(shader_loc_uMvp, 1, GL_FALSE, m4_identity().d);
-    glUniform1i(shader_loc_uTex, 0);
+    glUniform1i(shader_loc_uTex, ATLAS_TEXTURE_UNIT);
 
     glUseProgram(0);
 
@@ -202,7 +203,7 @@ void ui_renderer_init()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     _load_atlas_texture();
-    glActiveTexture(ATLAS_TEXTURE_UNIT);
+    glActiveTexture(ATLAS_TEXTURE_UNIT_ENUM);
     glBindTexture(GL_TEXTURE_2D, atlas_tex);
 }
 
