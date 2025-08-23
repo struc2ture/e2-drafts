@@ -25,7 +25,7 @@
     } \
 } while (0)
 
-#define break() __builtin_debugtrap()
+#define bp() __builtin_debugtrap()
 #define noop() do {} while (0)
 
 static void *xmalloc(size_t size)

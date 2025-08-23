@@ -7,6 +7,7 @@
 #include <OpenGL/gl3.h>
 
 #include "../common/gl_glue.h"
+#include "../common/glfw_glue.h"
 #include "../common/lin_math.h"
 #include "../common/types.h"
 #include "../common/util.h"
@@ -109,36 +110,6 @@ static void _add_indices(u32 base, u32 *indices, int count)
 
 static void _get_font_q_screen_verts_and_tex_coords(stbtt_aligned_quad q, v2 out_screen_verts[4], v2 out_tex_coords[4])
 {
-    // f32 min_x = cell_p.x * ATLAS_CELL_DIM;
-    // f32 max_x = min_x + ATLAS_CELL_DIM;
-    // min_x += ATLAS_CELL_PAD;
-    // max_x -= ATLAS_CELL_PAD;
-
-    // f32 max_y = ATLAS_DIM - cell_p.y * ATLAS_CELL_DIM;
-    // f32 min_y = max_y - ATLAS_CELL_DIM;
-    // max_y -= ATLAS_CELL_PAD;
-    // min_y += ATLAS_CELL_PAD;
-
-    // // texel offset, to sample the middle of texels
-    // min_x += 0.5f;
-    // max_x += 0.5f;
-    // min_y += 0.5f;
-    // max_y += 0.5f;
-
-    // // Normalized range
-    // min_x /= ATLAS_DIM;
-    // max_x /= ATLAS_DIM;
-    // min_y /= ATLAS_DIM;
-    // max_y /= ATLAS_DIM;
-
-    // out_verts[0].x = min_x; out_verts[0].y = min_y;
-    // out_verts[1].x = max_x; out_verts[1].y = min_y;
-    // out_verts[2].x = max_x; out_verts[2].y = max_y;
-    // out_verts[3].x = min_x; out_verts[3].y = max_y;
-
-    // for (int i = 0; i < 4; i++)
-    //     trace("atlas_vert[%d]: %f, %f", i, out_verts[i].x, out_verts[i].y);
-
     // typedef struct
     // {
     // float x0,y0,s0,t0; // top-left
@@ -154,14 +125,6 @@ static void _get_font_q_screen_verts_and_tex_coords(stbtt_aligned_quad q, v2 out
     out_tex_coords[1].x = q.s1; out_tex_coords[1].y = q.t0;
     out_tex_coords[2].x = q.s1; out_tex_coords[2].y = q.t1;
     out_tex_coords[3].x = q.s0; out_tex_coords[3].y = q.t1;
-}
-
-static void _get_verts_for_p_r(v2 p, f32 r, v2 out_verts[4])
-{
-    out_verts[0].x = p.x - r; out_verts[0].y = p.y - r;
-    out_verts[1].x = p.x + r; out_verts[1].y = p.y - r;
-    out_verts[2].x = p.x + r; out_verts[2].y = p.y + r;
-    out_verts[3].x = p.x - r; out_verts[3].y = p.y + r;
 }
 
 static void _load_font()
@@ -258,7 +221,6 @@ void text_renderer_submit_string(const char *str, v2 p, v4 color)
         {
             stbtt_aligned_quad q;
             stbtt_GetBakedQuad(char_data, atlas_w, atlas_h, ch-32, &p.x, &p.y ,&q, 1, i_dpi_scale);
-            // break();
             v2 screen_verts[4];
             v2 tex_coords[4];
             _get_font_q_screen_verts_and_tex_coords(q, screen_verts, tex_coords);
@@ -275,7 +237,6 @@ void text_renderer_submit_string(const char *str, v2 p, v4 color)
             _add_indices(ind_base, (u32[]){0, 1, 2, 0, 2, 3}, 6);
         }
     }
-
 }
 
 void text_renderer_draw(v2 window_size)

@@ -11,3 +11,4 @@ v2 glfwg__get_window_size_f();
 void glfwg__perform_timing_calculations();
 f32 glfwg__get_delta_time();
 f32 glfwg__get_avg_fps();
+bool glfwg__is_key_pressed(int key);
