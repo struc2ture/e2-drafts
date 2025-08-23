@@ -9,6 +9,7 @@
 #include "common/lin_math.h"
 #include "common/types.h"
 #include "common/util.h"
+#include "text_renderer/text_renderer.h"
 #include "ui_renderer/ui_renderer.h"
 
 void on_char(GLFWwindow *window, unsigned int codepoint)
@@ -60,6 +61,7 @@ int main()
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     ui_renderer_init();
+    text_renderer_init();
 
     while (!glfwWindowShouldClose(window))
     {
@@ -103,6 +105,16 @@ int main()
         ui_renderer_submit_circle(screen_middle, 16.0f, COLOR_BLACK);
 
         ui_renderer_draw(window_size);
+
+        text_renderer_submit_string(
+            V2(200.0f, 300.0f),
+            V2(300.0f, 300.0f),
+            V2(300.0f, 200.0f),
+            V2(200.0f, 200.0f),
+            COLOR_WHITE
+        );
+
+        text_renderer_draw(window_size);
 
         glfwSwapBuffers(window);
     }

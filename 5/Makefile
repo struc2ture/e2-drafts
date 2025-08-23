@@ -27,5 +27,8 @@ bin/common.o: $(wildcard src/common/*)
 bin/ui_renderer.o: $(wildcard src/ui_renderer/*)
 	$(CC) $(CFLAGS) -c src/ui_renderer/ui_renderer.c -o $@
 
-bin/editor: src/main.c bin/common.o bin/ui_renderer.o
+bin/text_renderer.o: $(wildcard src/text_renderer/*)
+	$(CC) $(CFLAGS) -c src/text_renderer/text_renderer.c -o $@
+
+bin/editor: src/main.c bin/common.o bin/ui_renderer.o bin/text_renderer.o
 	$(CC) $(CFLAGS) $(LFLAGS) $^ -o $@
