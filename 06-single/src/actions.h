@@ -2,7 +2,6 @@
 
 #include "editor.h"
 
-bool action_run_unit_tests(Editor_State *state);
 bool action_change_working_dir(Editor_State *state);
 bool action_live_scene_toggle_capture_input(Editor_State *state);
 bool action_debug_break(Editor_State *state);
@@ -12,11 +11,6 @@ bool action_open_test_image(Editor_State *state);
 bool action_open_test_live_scene(Editor_State *state);
 bool action_prompt_open_file(Editor_State *state);
 bool action_prompt_new_file(Editor_State *state);
-bool action_save_workspace(Editor_State *state);
-bool action_load_workspace(Editor_State *state);
-bool action_reload_workspace(Editor_State *state);
-bool action_run_scratch(Editor_State *state);
-bool action_reset_scratch(Editor_State *state);
 
 bool action_buffer_view_move_cursor(Editor_State *state, Buffer_View *buffer_view, Cursor_Movement_Dir dir, bool with_shift, bool with_alt, bool with_super);
 bool action_buffer_view_prompt_submit(Editor_State *state, Buffer_View *buffer_view);
@@ -41,4 +35,3 @@ bool action_buffer_view_repeat_search(Editor_State *state, Buffer_View *buffer_v
 bool action_buffer_view_whitespace_cleanup(Editor_State *state, Buffer_View *buffer_view);
 bool action_buffer_view_view_history(Editor_State *state, Buffer_View *buffer_view);
 bool action_buffer_view_undo_command(Editor_State *state, Buffer_View *buffer_view);
-bool action_run_scratch_for_buffer(Editor_State *state, Buffer *buffer);

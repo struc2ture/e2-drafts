@@ -38,4 +38,3 @@ bool action_buffer_view_repeat_search(Editor_State *state, Buffer_View *buffer_v
 bool action_buffer_view_whitespace_cleanup(Editor_State *state, Buffer_View *buffer_view);
 bool action_buffer_view_view_history(Editor_State *state, Buffer_View *buffer_view);
 bool action_buffer_view_undo_command(Editor_State *state, Buffer_View *buffer_view);
-bool action_run_scratch_for_buffer(Editor_State *state, Buffer *buffer);

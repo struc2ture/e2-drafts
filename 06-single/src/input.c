@@ -48,17 +48,9 @@ void input_key_global(Editor_State *state, const Platform_Event *e)
         {
             switch(e->key.key)
             {
-                case GLFW_KEY_F1:
-                {
-                    action_run_unit_tests(state);
-                } break;
                 case GLFW_KEY_F2:
                 {
                     action_change_working_dir(state);
-                } break;
-                case GLFW_KEY_F5:
-                {
-                    action_run_scratch(state);
                 } break;
                 case GLFW_KEY_F10:
                 {
@@ -74,10 +66,6 @@ void input_key_global(Editor_State *state, const Platform_Event *e)
         {
             switch (e->key.key)
             {
-                case GLFW_KEY_F5:
-                {
-                    action_reset_scratch(state);
-                } break;
             }
         }
         else if (e->key.mods == GLFW_MOD_SUPER)
@@ -115,15 +103,6 @@ void input_key_global(Editor_State *state, const Platform_Event *e)
         {
             switch (e->key.key)
             {
-                case GLFW_KEY_F5:
-                {
-                    action_save_workspace(state);
-                } break;
-
-                case GLFW_KEY_F9:
-                {
-                    action_reload_workspace(state);
-                } break;
             }
         }
     }

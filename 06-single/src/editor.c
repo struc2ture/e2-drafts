@@ -54,8 +54,6 @@ void on_init(Editor_State *state, GLFWwindow *window, float window_w, float wind
     {
         state->working_dir = os_get_working_dir();
     }
-
-    action_load_workspace(state);
 }
 
 void on_reload(Editor_State *state)
@@ -138,8 +136,6 @@ void on_platform_event(Editor_State *state, const Platform_Event *e)
 
 void on_destroy(Editor_State *state)
 {
-    action_save_workspace(state);
-
     for (int i = 0; i < state->live_scene_count; i++)
     {
         live_scene_destroy(state->live_scenes[i], state);
@@ -1197,7 +1193,6 @@ bool prompt_submit(Prompt_Context context, Prompt_Result result, Rect prompt_rec
                 text_buffer_history_whitespace_cleanup(&b->text_buffer, &b->history);
                 text_buffer_write_to_file(b->text_buffer, result.str);
                 buffer_replace_file(b, result.str);
-                action_save_workspace(state);
             }
             else log_warning("prompt_submit: PROMPT_SAVE_AS: Buffer_View %p does not exist", context.save_as.for_buffer_view);
         } break;
@@ -1722,7 +1717,5 @@ void live_scene_rebuild(Live_Scene *live_scene)
 #include "os.c"
 #include "renderer.c"
 #include "scene_loader.c"
-#include "scratch_runner.c"
 #include "string_builder.c"
 #include "text_buffer.c"
-#include "unit_tests.c"
